@@ -1,5 +1,5 @@
 const API_URL =
-"https://script.google.com/macros/s/XXXXXXXXXXXX/exec";
+"https://script.google.com/macros/s/AKfycbxLfC06Rn0lTABdIQcFYa2cnFtZgIFmWvLZxPpnbIjVvUdkDs6XlSdlNRpoMesKL7DV/exec";
 
 
 async function getCustomer(page = 1){
