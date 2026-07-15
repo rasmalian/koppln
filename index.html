@@ -97,6 +97,39 @@
 <script src="api.js"></script>
 <script src="customer.js"></script>
 <script src="app.js"></script>
+<div id="editSheet" class="bottom-sheet">
 
+    <div class="sheet-content">
+
+        <h2>Edit Customer</h2>
+
+        <input type="text" id="editNama">
+
+        <input type="text" id="editAlamat">
+
+        <input type="text"
+               id="editHandphone"
+               readonly>
+
+        <input type="date"
+               id="editLastService">
+
+        <input type="date"
+               id="editLastBC">
+
+        <input type="text"
+               id="editNoBC">
+
+        <button onclick="saveCustomer()">
+            Simpan
+        </button>
+
+        <button onclick="closeEdit()">
+            Batal
+        </button>
+
+    </div>
+
+</div>
 </body>
 </html>
