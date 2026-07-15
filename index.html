@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1">
+
+    <title>AC Service App</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div id="content">
+
+    <!-- CUSTOMER -->
+
+    <div id="customer-page">
+
+        <h2>Customer</h2>
+
+        <input type="text"
+               id="search"
+               placeholder="Cari nama / handphone">
+
+        <div id="customer-list"></div>
+
+        <button id="load-more">
+            Load More
+        </button>
+
+    </div>
+
+
+    <!-- SCHEDULE -->
+
+    <div id="schedule-page"
+         style="display:none">
+
+        <h2>Schedule</h2>
+
+        <p>Coming Soon</p>
+
+    </div>
+
+
+    <!-- CASH FLOW -->
+
+    <div id="cashflow-page"
+         style="display:none">
+
+        <h2>Cash Flow</h2>
+
+        <p>Coming Soon</p>
+
+    </div>
+
+
+    <!-- CHART -->
+
+    <div id="chart-page"
+         style="display:none">
+
+        <h2>Chart</h2>
+
+        <p>Coming Soon</p>
+
+    </div>
+
+</div>
+
+
+<nav class="bottom-nav">
+
+    <button onclick="showPage('customer')">
+        Customer
+    </button>
+
+    <button onclick="showPage('schedule')">
+        Schedule
+    </button>
+
+    <button onclick="showPage('cashflow')">
+        Cash Flow
+    </button>
+
+    <button onclick="showPage('chart')">
+        Chart
+    </button>
+
+</nav>
+
+
+<script src="api.js"></script>
+<script src="customer.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
