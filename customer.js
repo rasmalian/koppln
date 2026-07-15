@@ -89,6 +89,99 @@ function editCustomer(handphone){
 
 }
 
+function openEdit(item){
+
+    document.getElementById(
+        "editNama"
+    ).value = item.nama;
+
+
+    document.getElementById(
+        "editAlamat"
+    ).value = item.alamat;
+
+
+    document.getElementById(
+        "editHandphone"
+    ).value = item.handphone;
+
+
+    document.getElementById(
+        "editLastService"
+    ).value = item.last_service;
+
+
+    document.getElementById(
+        "editLastBC"
+    ).value = item.last_bc;
+
+
+    document.getElementById(
+        "editNoBC"
+    ).value = item.no_bc;
+
+
+    document.getElementById(
+        "editSheet"
+    ).classList.add(
+        "active"
+    );
+
+}
+
+function closeEdit(){
+
+    document.getElementById(
+        "editSheet"
+    ).classList.remove(
+        "active"
+    );
+
+}
+
+async function saveCustomer(){
+
+    const data = {
+
+        handphone:
+        document.getElementById("editHandphone").value,
+
+        nama:
+        document.getElementById("editNama").value,
+
+        alamat:
+        document.getElementById("editAlamat").value,
+
+        last_service:
+        document.getElementById("editLastService").value,
+
+        last_bc:
+        document.getElementById("editLastBC").value,
+
+        no_bc:
+        document.getElementById("editNoBC").value
+
+    };
+
+
+    const result =
+    await editCustomerAPI(data);
+
+
+    if(result.status){
+
+        alert("Berhasil diupdate");
+
+        location.reload();
+
+    }else{
+
+        alert(result.message);
+
+    }
+
+}
+
 
 
 document
