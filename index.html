@@ -1,135 +1,337 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width,initial-scale=1">
-
-    <title>AC Service App</title>
-
-    <link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Manajemen Pelanggan</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen m-0 p-0 font-sans">
 
-<body>
+  <!-- Frame Mobile Wrapper -->
+  <div class="w-full max-w-md h-screen bg-gray-50 flex flex-col shadow-2xl overflow-hidden relative">
+    
+    <!-- Top Bar / Header -->
+    <header class="bg-indigo-600 text-white px-4 py-3 flex justify-between items-center shadow-md z-10">
+      <div class="flex items-center gap-2">
+        <i class="ph ph-users-three text-2xl"></i>
+        <h1 class="font-bold text-lg tracking-wide">Data Pelanggan</h1>
+      </div>
+      <button onclick="loadData(currentPage)" class="p-2 hover:bg-indigo-700 rounded-full transition">
+        <i class="ph ph-arrows-clockwise text-xl"></i>
+      </button>
+    </header>
 
-<div id="content">
-
-    <!-- CUSTOMER -->
-
-    <div id="customer-page">
-
-        <h2>Customer</h2>
-
-        <input type="text"
-               id="search"
-               placeholder="Cari nama / handphone">
-
-        <div id="customer-list"></div>
-
-        <button id="load-more">
-            Load More
-        </button>
-
+    <!-- Search / Quick Search -->
+    <div class="p-3 bg-white border-b shadow-sm">
+      <div class="relative">
+        <i class="ph ph-magnifying-glass absolute left-3 top-3 text-gray-400 text-lg"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          onkeyup="filterData()" 
+          placeholder="Cari nama, alamat, HP..." 
+          class="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+      </div>
     </div>
 
+    <!-- Main Container: List Data -->
+    <main id="customerList" class="flex-1 overflow-y-auto p-3 space-y-3">
+      <!-- Loading State -->
+      <div class="flex flex-col items-center justify-center h-full text-gray-400 space-y-2">
+        <i class="ph ph-spinner animate-spin text-3xl text-indigo-600"></i>
+        <p class="text-sm">Memuat data dari Google Sheets...</p>
+      </div>
+    </main>
 
-    <!-- SCHEDULE -->
-
-    <div id="schedule-page"
-         style="display:none">
-
-        <h2>Schedule</h2>
-
-        <p>Coming Soon</p>
-
+    <!-- Pagination Controller (Sesuai PAGE_SIZE = 20) -->
+    <div class="bg-white border-t px-4 py-2 flex justify-between items-center text-xs text-gray-600">
+      <button id="btnPrev" onclick="changePage(-1)" class="px-3 py-1.5 bg-gray-100 rounded-lg disabled:opacity-40 flex items-center gap-1 font-medium">
+        <i class="ph ph-caret-left"></i> Prev
+      </button>
+      <span id="pageInfo" class="font-semibold text-gray-700">Halaman 1</span>
+      <button id="btnNext" onclick="changePage(1)" class="px-3 py-1.5 bg-gray-100 rounded-lg disabled:opacity-40 flex items-center gap-1 font-medium">
+        Next <i class="ph ph-caret-right"></i>
+      </button>
     </div>
 
+    <!-- Bottom Navigation Bar -->
+    <nav class="bg-white border-t border-gray-200 flex justify-around py-2 px-4 shadow-lg z-10">
+      <button class="flex flex-col items-center text-indigo-600 font-semibold text-xs">
+        <i class="ph ph-house text-xl"></i>
+        <span>Beranda</span>
+      </button>
+      <button onclick="openForm('add')" class="flex flex-col items-center text-gray-400 hover:text-indigo-600 text-xs transition">
+        <i class="ph ph-plus-circle text-xl"></i>
+        <span>Tambah</span>
+      </button>
+    </nav>
 
-    <!-- CASH FLOW -->
+    <!-- Modal Form (Input & Edit Data) -->
+    <div id="modalForm" class="fixed inset-0 bg-black/50 z-50 flex items-end justify-center hidden transition-opacity">
+      <div class="bg-white w-full max-w-md rounded-t-2xl p-4 space-y-4 max-h-[90vh] overflow-y-auto animate-slide-up">
+        
+        <div class="flex justify-between items-center border-b pb-2">
+          <h2 id="modalTitle" class="font-bold text-gray-800 text-base">Edit Pelanggan</h2>
+          <button onclick="closeForm()" class="text-gray-400 hover:text-gray-600 p-1">
+            <i class="ph ph-x text-xl"></i>
+          </button>
+        </div>
 
-    <div id="cashflow-page"
-         style="display:none">
+        <form id="customerForm" onsubmit="submitForm(event)" class="space-y-3 text-sm">
+          <input type="hidden" id="formAction" value="add">
 
-        <h2>Cash Flow</h2>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">No. Handphone (Key Unique)</label>
+            <input type="tel" id="formHP" required placeholder="Contoh: 08123456789" class="w-full px-3 py-2 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
 
-        <p>Coming Soon</p>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Nama</label>
+            <input type="text" id="formNama" placeholder="Nama Lengkap" class="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
 
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Alamat</label>
+            <textarea id="formAlamat" rows="2" placeholder="Alamat Pelanggan" class="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Last Service</label>
+            <input type="date" id="formLastService" class="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Last BC</label>
+              <input type="date" id="formLastBC" class="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">No. BC</label>
+              <input type="text" id="formNoBC" placeholder="Misal: BC01" class="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+          </div>
+
+          <button type="submit" id="btnSubmit" class="w-full py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition flex justify-center items-center gap-2">
+            <span>Simpan Data</span>
+          </button>
+        </form>
+
+      </div>
     </div>
 
+  </div>
 
-    <!-- CHART -->
+  <script>
+    // ⚠️ GANTI DENGAN URL APPS SCRIPT ANDA
+    const API_URL = "https://script.google.com/macros/s/AKfycbxLfC06Rn0lTABdIQcFYa2cnFtZgIFmWvLZxPpnbIjVvUdkDs6XlSdlNRpoMesKL7DV/exec";
 
-    <div id="chart-page"
-         style="display:none">
+    let currentPage = 1;
+    let totalPage = 1;
+    let currentData = [];
 
-        <h2>Chart</h2>
+    // 1. Fetch Data dari Apps Script (action=view&page=X)
+    async function loadData(page = 1) {
+      const container = document.getElementById('customerList');
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-full text-gray-400 space-y-2">
+          <i class="ph ph-spinner animate-spin text-3xl text-indigo-600"></i>
+          <p class="text-sm">Memuat data halaman ${page}...</p>
+        </div>
+      `;
 
-        <p>Coming Soon</p>
+      try {
+        const response = await fetch(`${API_URL}?action=view&page=${page}`);
+        const res = await response.json();
 
-    </div>
+        if (res.status) {
+          currentPage = res.page;
+          totalPage = res.total_page;
+          currentData = res.data;
+          
+          updatePaginationControls();
+          renderData(currentData);
+        } else {
+          throw new Error(res.message);
+        }
+      } catch (error) {
+        container.innerHTML = `
+          <div class="p-4 bg-red-50 text-red-600 rounded-xl text-center text-sm border border-red-200">
+            <i class="ph ph-warning-circle text-2xl mb-1 block"></i>
+            Gagal mengambil data. Pastikan URL Web App sudah diset 'Anyone'.
+          </div>
+        `;
+      }
+    }
 
-</div>
+    // 2. Render List Pelanggan (Hanya Tampilkan: Nama, Alamat, HP, Last Service)
+    function renderData(data) {
+      const container = document.getElementById('customerList');
+      
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 text-gray-400 text-sm">
+            <i class="ph ph-folder-open text-3xl mb-1 block"></i>
+            Tidak ada data ditemukan.
+          </div>
+        `;
+        return;
+      }
 
+      container.innerHTML = data.map((item) => `
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3 hover:shadow-md transition">
+          
+          <!-- Header Card: Nama & Tombol Edit -->
+          <div class="flex justify-between items-start border-b border-gray-100 pb-2">
+            <h3 class="font-bold text-gray-800 text-base flex items-center gap-1.5">
+              <i class="ph ph-user text-indigo-600"></i>
+              ${item.nama || 'Tanpa Nama'}
+            </h3>
+            <button onclick='openForm("edit", ${JSON.stringify(item)})' class="flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 text-xs font-semibold rounded-lg transition">
+              <i class="ph ph-pencil-simple text-sm"></i>
+              Edit
+            </button>
+          </div>
 
-<nav class="bottom-nav">
+          <!-- Alamat -->
+          <div class="flex items-start gap-2 text-xs text-gray-600">
+            <i class="ph ph-map-pin text-gray-400 text-sm mt-0.5 shrink-0"></i>
+            <span class="line-clamp-2">${item.alamat || 'Alamat tidak diisi'}</span>
+          </div>
 
-    <button onclick="showPage('customer')">
-        Customer
-    </button>
+          <!-- Handphone & Last Service -->
+          <div class="grid grid-cols-2 gap-2 pt-1 text-xs">
+            <a href="https://wa.me/${formatWA(item.handphone)}" target="_blank" class="flex items-center gap-1.5 bg-green-50 text-green-700 p-2 rounded-lg hover:bg-green-100 transition">
+              <i class="ph ph-whatsapp-logo text-base text-green-600"></i>
+              <span class="font-medium truncate">${item.handphone || '-'}</span>
+            </a>
 
-    <button onclick="showPage('schedule')">
-        Schedule
-    </button>
+            <div class="flex items-center gap-1.5 bg-gray-50 text-gray-600 p-2 rounded-lg border border-gray-100">
+              <i class="ph ph-calendar-blank text-base text-indigo-500"></i>
+              <div class="flex flex-col">
+                <span class="text-[10px] text-gray-400 uppercase leading-none">Last Service</span>
+                <span class="font-medium mt-0.5">${item.last_service || '-'}</span>
+              </div>
+            </div>
+          </div>
 
-    <button onclick="showPage('cashflow')">
-        Cash Flow
-    </button>
+        </div>
+      `).join('');
+    }
 
-    <button onclick="showPage('chart')">
-        Chart
-    </button>
+    // 3. Format WhatsApp
+    function formatWA(phone) {
+      if (!phone) return '';
+      let cleaned = String(phone).replace(/\D/g, '');
+      if (cleaned.startsWith('0')) cleaned = '62' + cleaned.slice(1);
+      return cleaned;
+    }
 
-</nav>
+    // 4. Pengatur Paging Page
+    function updatePaginationControls() {
+      document.getElementById('pageInfo').innerText = `Hal ${currentPage} / ${totalPage || 1}`;
+      document.getElementById('btnPrev').disabled = currentPage <= 1;
+      document.getElementById('btnNext').disabled = currentPage >= totalPage;
+    }
 
+    function changePage(direction) {
+      const targetPage = currentPage + direction;
+      if (targetPage >= 1 && targetPage <= totalPage) {
+        loadData(targetPage);
+      }
+    }
 
-<script src="api.js"></script>
-<script src="customer.js"></script>
-<script src="app.js"></script>
-<div id="editSheet" class="bottom-sheet">
+    // 5. Fitur Search Lokal
+    function filterData() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = currentData.filter(item => {
+        return (item.nama || '').toLowerCase().includes(query) ||
+               (item.alamat || '').toLowerCase().includes(query) ||
+               (item.handphone || '').toLowerCase().includes(query);
+      });
+      renderData(filtered);
+    }
 
-    <div class="sheet-content">
+    // 6. Buka Modal Form (Tambah / Edit)
+    function openForm(action, data = null) {
+      document.getElementById('formAction').value = action;
+      const modal = document.getElementById('modalForm');
+      const hpInput = document.getElementById('formHP');
 
-        <h2>Edit Customer</h2>
+      if (action === 'edit' && data) {
+        document.getElementById('modalTitle').innerText = "Edit Pelanggan";
+        hpInput.value = data.handphone || '';
+        hpInput.readOnly = true; // Lock HP karena dipakai sebagai ID Unik di backend
+        hpInput.classList.add('bg-gray-100', 'text-gray-500');
 
-        <input type="text" id="editNama">
+        document.getElementById('formNama').value = data.nama || '';
+        document.getElementById('formAlamat').value = data.alamat || '';
+        document.getElementById('formLastService').value = data.last_service || '';
+        document.getElementById('formLastBC').value = data.last_bc || '';
+        document.getElementById('formNoBC').value = data.no_bc || '';
+      } else {
+        document.getElementById('modalTitle').innerText = "Tambah Pelanggan";
+        document.getElementById('customerForm').reset();
+        hpInput.readOnly = false;
+        hpInput.classList.remove('bg-gray-100', 'text-gray-500');
+      }
 
-        <input type="text" id="editAlamat">
+      modal.classList.remove('hidden');
+    }
 
-        <input type="text"
-               id="editHandphone"
-               readonly>
+    function closeForm() {
+      document.getElementById('modalForm').classList.add('hidden');
+    }
 
-        <input type="date"
-               id="editLastService">
+    // 7. Submit Form ke Apps Script (POST ke action=add atau action=edit)
+    async function submitForm(e) {
+      e.preventDefault();
+      const btnSubmit = document.getElementById('btnSubmit');
+      const action = document.getElementById('formAction').value;
 
-        <input type="date"
-               id="editLastBC">
+      const params = new URLSearchParams({
+        action: action,
+        handphone: document.getElementById('formHP').value,
+        nama: document.getElementById('formNama').value,
+        alamat: document.getElementById('formAlamat').value,
+        last_service: document.getElementById('formLastService').value,
+        last_bc: document.getElementById('formLastBC').value,
+        no_bc: document.getElementById('formNoBC').value
+      });
 
-        <input type="text"
-               id="editNoBC">
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<i class="ph ph-spinner animate-spin text-lg"></i> Menyimpan...`;
 
-        <button onclick="saveCustomer()">
-            Simpan
-        </button>
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString()
+        });
 
-        <button onclick="closeEdit()">
-            Batal
-        </button>
+        const res = await response.json();
 
-    </div>
+        if (res.status) {
+          alert(action === 'add' ? 'Data berhasil ditambahkan!' : 'Data berhasil diperbarui!');
+          closeForm();
+          loadData(currentPage);
+        } else {
+          alert('Gagal: ' + res.message);
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = `<span>Simpan Data</span>`;
+      }
+    }
 
-</div>
+    // Jalankan pertama kali
+    loadData();
+  </script>
 </body>
 </html>
